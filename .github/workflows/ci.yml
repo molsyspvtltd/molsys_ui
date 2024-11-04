@@ -1,0 +1,49 @@
+name: React CI/CD
+
+# Trigger the workflow on pushes and pull requests to the main branch
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+# Define the job(s) in this workflow
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # Use Ubuntu for the job environment
+
+    steps:
+      # Step 1: Check out the code from your repo
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Specify the Node version your React app requires
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          npm install
+
+      # Step 4: Run ESLint (add this step)
+      - name: Run ESLint
+        run: npm run lint || true  # Adjust as needed if your lint command is different
+
+      # Step 5: Build the project
+      - name: Build the project
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+        run: npm run build
+
+      # Step 6: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build  # The directory containing your build files
